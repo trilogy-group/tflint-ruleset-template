@@ -15,7 +15,7 @@ func main() {
 				rules.NewAwsInstanceExampleTypeRule(),
 				rules.NewAwsS3BucketExampleLifecycleRule(),
 				rules.NewGoogleComputeSSLPolicyRule(),
-				rules.NewTerraformBackendTypeRule(),
+				rules.NewGetModuleSourceRule(),
 			},
 		},
 	})
