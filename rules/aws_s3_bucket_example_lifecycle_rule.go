@@ -1,54 +1,78 @@
 package rules
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
 // AwsS3BucketExampleLifecycleRule checks whether ...
-type AwsS3BucketExampleLifecycleRule struct {
+type ReccomendationFlagRule struct {
 	tflint.DefaultRule
+	TagToID        map[string]string
+	AttributeRecco map[string]map[string]string
 }
 
 // NewAwsS3BucketExampleLifecycleRule returns a new rule
-func NewAwsS3BucketExampleLifecycleRule() *AwsS3BucketExampleLifecycleRule {
-	return &AwsS3BucketExampleLifecycleRule{}
+func NewReccomendationFlagRule(tagIDMap map[string]string, reccoMap map[string]map[string]string) *ReccomendationFlagRule {
+	return &ReccomendationFlagRule{
+		TagToID:        tagIDMap,
+		AttributeRecco: reccoMap,
+	}
 }
 
 // Name returns the rule name
-func (r *AwsS3BucketExampleLifecycleRule) Name() string {
-	return "aws_s3_bucket_example_lifecycle_rule"
+func (r *ReccomendationFlagRule) Name() string {
+	return "flag_reccomend"
 }
 
 // Enabled returns whether the rule is enabled by default
-func (r *AwsS3BucketExampleLifecycleRule) Enabled() bool {
+func (r *ReccomendationFlagRule) Enabled() bool {
 	return true
 }
 
 // Severity returns the rule severity
-func (r *AwsS3BucketExampleLifecycleRule) Severity() tflint.Severity {
-	return tflint.ERROR
+func (r *ReccomendationFlagRule) Severity() tflint.Severity {
+	return tflint.WARNING
 }
 
 // Link returns the rule reference link
-func (r *AwsS3BucketExampleLifecycleRule) Link() string {
+func (r *ReccomendationFlagRule) Link() string {
 	return ""
 }
 
+func (r *ReccomendationFlagRule) getAttributeList() []string {
+	var attributes []string
+	for _, reccos := range r.AttributeRecco {
+		for attribute := range reccos {
+			if attribute == "NoAttributeMarker" {
+				continue
+			}
+			attributes = append(attributes, attribute)
+		}
+	}
+	attributes = append(attributes, "tags")
+	return attributes
+}
+
 // Check checks whether ...
-func (r *AwsS3BucketExampleLifecycleRule) Check(runner tflint.Runner) error {
-	// This rule is an example to get nested resource attributes.
-	resources, err := runner.GetResourceContent("aws_s3_bucket", &hclext.BodySchema{
+func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
+	var attributes = r.getAttributeList()
+	var schema []hclext.AttributeSchema
+	for _, attribute := range attributes {
+		var temp hclext.AttributeSchema
+		temp.Name = attribute
+		schema = append(schema, temp)
+	}
+	resources, err := runner.GetModuleContent(&hclext.BodySchema{
 		Blocks: []hclext.BlockSchema{
 			{
-				Type: "lifecycle_rule",
+				Type:       "resource",
+				LabelNames: []string{"resource_type", "resource_name"},
 				Body: &hclext.BodySchema{
-					Attributes: []hclext.AttributeSchema{
-						{Name: "enabled"},
-					},
-					Blocks: []hclext.BlockSchema{
-						{Type: "transition"},
-					},
+					Attributes: schema,
 				},
 			},
 		},
@@ -56,26 +80,59 @@ func (r *AwsS3BucketExampleLifecycleRule) Check(runner tflint.Runner) error {
 	if err != nil {
 		return err
 	}
+	for _, module := range resources.Blocks {
+		tags, exists := module.Body.Attributes["tags"]
+		if !exists {
+			continue
+		}
+		var getTags map[string]string
+		_ = runner.EvaluateExpr(tags.Expr, &getTags, nil)
 
-	for _, resource := range resources.Blocks {
-		for _, rule := range resource.Body.Blocks {
-			if err := runner.EmitIssue(r, "`lifecycle_rule` block found", rule.DefRange); err != nil {
-				return err
+		var yor_trace = getTags["yor_trace"]
+		yorTraceStrip := strings.Trim(yor_trace, "\n")
+		yorTraceTrim := strings.Trim(yorTraceStrip, `"`)
+		var AWSID = r.TagToID[yorTraceTrim]
+		err = runner.EnsureNoError(err, func() error {
+			if AWSID == "" {
+				runner.EmitIssue(
+					r,
+					fmt.Sprintf("Failed to find AWS ID with yor_trace: \"%s\".Either the resource has not been deployed, or the yor trace has been changed. You might want to run terraform apply", yorTraceTrim),
+					tags.Expr.Range(),
+				)
 			}
-
-			if attr, exists := rule.Body.Attributes["enabled"]; exists {
-				if err := runner.EmitIssue(r, "`enabled` attribute found", attr.Expr.Range()); err != nil {
-					return err
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		reccoforID := r.AttributeRecco[AWSID]
+		for attributeType, attributeValue := range reccoforID {
+			if attributeType == "NoAttributeMarker" {
+				runner.EmitIssue(
+					r,
+					fmt.Sprintf("Oppurtunity Description: \"%s\"", attributeValue),
+					module.DefRange,
+				)
+			} else {
+				attributeTerraform, existsAttribute := module.Body.Attributes[attributeType]
+				if !existsAttribute {
+					runner.EmitIssue(
+						r,
+						fmt.Sprint("Oppurtunity exists but attribute not found. \"%s\" should be \"%s\"", attributeType, attributeValue),
+						module.DefRange,
+					)
 				}
-			}
-
-			for _, transitions := range rule.Body.Blocks {
-				if err := runner.EmitIssue(r, "`transition` block found", transitions.DefRange); err != nil {
-					return err
+				var extractAttribute string
+				runner.EvaluateExpr(attributeTerraform.Expr, &extractAttribute, nil)
+				if extractAttribute != attributeValue {
+					runner.EmitIssue(
+						r,
+						fmt.Sprintf("Reccomendation exists for this attribute. It should be set to \"%s\"", attributeValue),
+						attributeTerraform.Expr.Range(),
+					)
 				}
 			}
 		}
 	}
-
 	return nil
 }
