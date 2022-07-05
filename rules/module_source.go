@@ -24,7 +24,7 @@ func (r *GetModuleSourceRule) Name() string {
 
 // Enabled returns whether the rule is enabled by default
 func (r *GetModuleSourceRule) Enabled() bool {
-	return false
+	return true
 }
 
 // Severity returns the rule severity

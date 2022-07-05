@@ -7,14 +7,14 @@ import (
 )
 
 func main() {
+	tagToID := make(map[string]string)
+	reccos := make(map[string]map[string]string)
 	plugin.Serve(&plugin.ServeOpts{
 		RuleSet: &tflint.BuiltinRuleSet{
 			Name:    "template",
 			Version: "0.1.0",
 			Rules: []tflint.Rule{
-				rules.NewAwsInstanceExampleTypeRule(),
-				rules.NewAwsS3BucketExampleLifecycleRule(),
-				rules.NewGoogleComputeSSLPolicyRule(),
+				rules.NewReccomendationFlagRule(tagToID, reccos),
 				rules.NewGetModuleSourceRule(),
 			},
 		},
