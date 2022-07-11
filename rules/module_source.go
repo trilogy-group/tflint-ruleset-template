@@ -8,48 +8,46 @@ import (
 )
 
 // TerraformBackendTypeRule checks whether ...
-type TerraformBackendTypeRule struct {
+type GetModuleSourceRule struct {
 	tflint.DefaultRule
 }
 
 // NewTerraformBackendTypeRule returns a new rule
-func NewTerraformBackendTypeRule() *TerraformBackendTypeRule {
-	return &TerraformBackendTypeRule{}
+func NewGetModuleSourceRule() *GetModuleSourceRule {
+	return &GetModuleSourceRule{}
 }
 
 // Name returns the rule name
-func (r *TerraformBackendTypeRule) Name() string {
-	return "terraform_backend_type"
+func (r *GetModuleSourceRule) Name() string {
+	return "module_source"
 }
 
 // Enabled returns whether the rule is enabled by default
-func (r *TerraformBackendTypeRule) Enabled() bool {
+func (r *GetModuleSourceRule) Enabled() bool {
 	return true
 }
 
 // Severity returns the rule severity
-func (r *TerraformBackendTypeRule) Severity() tflint.Severity {
-	return tflint.ERROR
+func (r *GetModuleSourceRule) Severity() tflint.Severity {
+	return tflint.NOTICE
 }
 
 // Link returns the rule reference link
-func (r *TerraformBackendTypeRule) Link() string {
+func (r *GetModuleSourceRule) Link() string {
 	return ""
 }
 
 // Check checks whether ...
-func (r *TerraformBackendTypeRule) Check(runner tflint.Runner) error {
+func (r *GetModuleSourceRule) Check(runner tflint.Runner) error {
 	// This rule is an example to get attributes of blocks other than resources.
 	content, err := runner.GetModuleContent(&hclext.BodySchema{
 		Blocks: []hclext.BlockSchema{
 			{
-				Type: "terraform",
+				Type:       "module",
+				LabelNames: []string{"terraform_name"},
 				Body: &hclext.BodySchema{
-					Blocks: []hclext.BlockSchema{
-						{
-							Type:       "backend",
-							LabelNames: []string{"type"},
-						},
+					Attributes: []hclext.AttributeSchema{
+						{Name: "source"},
 					},
 				},
 			},
@@ -58,19 +56,23 @@ func (r *TerraformBackendTypeRule) Check(runner tflint.Runner) error {
 	if err != nil {
 		return err
 	}
-
-	for _, terraform := range content.Blocks {
-		for _, backend := range terraform.Body.Blocks {
+	for _, module := range content.Blocks {
+		attribute, exists := module.Body.Attributes["source"]
+		if !exists {
+			continue
+		}
+		var extract string
+		_ = runner.EvaluateExpr(attribute.Expr, &extract, nil)
+		{
 			err := runner.EmitIssue(
 				r,
-				fmt.Sprintf("backend type is %s", backend.Labels[0]),
-				backend.DefRange,
+				fmt.Sprintf("%s", extract),
+				attribute.Expr.Range(),
 			)
 			if err != nil {
 				return err
 			}
 		}
 	}
-
 	return nil
 }
