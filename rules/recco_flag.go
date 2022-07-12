@@ -86,7 +86,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !exists {
 			runner.EmitIssue(
 				r,
-				fmt.Sprintf("The resource in question does not have tags. Apply yor tags and do a terraform apply!"),
+				"The resource in question does not have tags. Apply tags by running ./applyTags and do a terraform apply!",
 				module.DefRange,
 			)
 			continue
@@ -98,7 +98,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !found {
 			runner.EmitIssue(
 				r,
-				fmt.Sprintf("The resource in question does not have a yor trace. Apply yor tags and do a terraform apply!"),
+				"The resource in question does not have a yor trace. Apply tags by running ./applyTags and do a terraform apply!",
 				tags.Expr.Range(),
 			)
 			continue
@@ -134,7 +134,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 				if !existsAttribute {
 					runner.EmitIssue(
 						r,
-						fmt.Sprint("Oppurtunity exists but attribute not found. \"%s\" should be \"%s\"", attributeType, attributeValue),
+						fmt.Sprintf("Oppurtunity exists but attribute not found. \"%s\" should be \"%s\"", attributeType, attributeValue),
 						module.DefRange,
 					)
 				}

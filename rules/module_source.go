@@ -1,8 +1,6 @@
 package rules
 
 import (
-	"fmt"
-
 	"github.com/terraform-linters/tflint-plugin-sdk/hclext"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
@@ -66,7 +64,7 @@ func (r *GetModuleSourceRule) Check(runner tflint.Runner) error {
 		{
 			err := runner.EmitIssue(
 				r,
-				fmt.Sprintf("%s", extract),
+				extract,
 				attribute.Expr.Range(),
 			)
 			if err != nil {
