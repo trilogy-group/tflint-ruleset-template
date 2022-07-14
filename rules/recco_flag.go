@@ -94,8 +94,8 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		var getTags map[string]string
 		_ = runner.EvaluateExpr(tags.Expr, &getTags, nil)
 
-		var yor_trace, found = getTags["yor_trace"]
-		if !found {
+		var yor_trace, foundY = getTags["yor_trace"]
+		if !foundY {
 			runner.EmitIssue(
 				r,
 				"The resource in question does not have a yor trace. Apply tags by running ./applyTags and do a terraform apply!",
@@ -105,19 +105,14 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		}
 		yorTraceStrip := strings.Trim(yor_trace, "\n")
 		yorTraceTrim := strings.Trim(yorTraceStrip, `"`)
-		var AWSID = r.TagToID[yorTraceTrim]
-		err = runner.EnsureNoError(err, func() error {
-			if AWSID == "" {
-				runner.EmitIssue(
-					r,
-					fmt.Sprintf("Failed to find AWS ID with yor_trace: \"%s\".Either the resource has not been deployed, or the yor trace has been changed. You might want to run a terraform apply!", yorTraceTrim),
-					tags.Expr.Range(),
-				)
-			}
-			return nil
-		})
-		if err != nil {
-			return err
+		var AWSID, foundA = r.TagToID[yorTraceTrim]
+		if !foundA {
+			runner.EmitIssue(
+				r,
+				fmt.Sprintf("Failed to find AWS ID with yor_trace: \"%s\".Either the resource has not been deployed, or the yor trace has been changed. You might want to run a terraform apply!", yorTraceTrim),
+				tags.Expr.Range(),
+			)
+			continue
 		}
 		AWS_Strip := strings.Trim(AWSID, "\n")
 		AWSTrim := strings.Trim(AWS_Strip, `"`)
@@ -134,16 +129,17 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 				if !existsAttribute {
 					runner.EmitIssue(
 						r,
-						fmt.Sprintf("Oppurtunity exists but attribute not found. \"%s\" should be \"%s\"", attributeType, attributeValue),
+						fmt.Sprintf("Oppurtunity exists but the attribute could not be found. Attribute \"%s\" should be set to \"%s\"", attributeType, attributeValue),
 						module.DefRange,
 					)
+					continue
 				}
 				var extractAttribute string
 				runner.EvaluateExpr(attributeTerraform.Expr, &extractAttribute, nil)
 				if extractAttribute != attributeValue {
 					runner.EmitIssue(
 						r,
-						fmt.Sprintf("Reccomendation exists for this attribute. It should be set to \"%s\"", attributeValue),
+						fmt.Sprintf("Oppurtunity exists for this attribute. It should be set to \"%s\"", attributeValue),
 						attributeTerraform.Expr.Range(),
 					)
 				}
