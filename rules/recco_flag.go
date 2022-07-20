@@ -86,7 +86,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !exists {
 			runner.EmitIssue(
 				r,
-				"The resource in question does not have tags. Apply tags by running ./applyTags and do a terraform apply!",
+				"The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
 				module.DefRange,
 			)
 			continue
@@ -98,7 +98,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !foundY {
 			runner.EmitIssue(
 				r,
-				"The resource in question does not have a yor trace. Apply tags by running ./applyTags and do a terraform apply!",
+				"The resource in question does not have a yor trace. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
 				tags.Expr.Range(),
 			)
 			continue
