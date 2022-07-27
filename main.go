@@ -74,12 +74,16 @@ func main() {
 		//Add err log
 		panic(errT) //system fail
 	}
+	var taggableMap = make(map[string]bool)
+	for _, resourceType := range taggableArray {
+		taggableMap[resourceType] = true
+	}
 	plugin.Serve(&plugin.ServeOpts{
 		RuleSet: &tflint.BuiltinRuleSet{
 			Name:    "template",
 			Version: "0.1.0",
 			Rules: []tflint.Rule{
-				rules.NewReccomendationFlagRule(tagToID, reccos),
+				rules.NewReccomendationFlagRule(tagToID, reccos, taggableMap),
 				rules.NewGetModuleSourceRule(),
 			},
 		},

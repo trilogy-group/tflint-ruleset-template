@@ -13,13 +13,15 @@ type ReccomendationFlagRule struct {
 	tflint.DefaultRule
 	TagToID        map[string]string
 	AttributeRecco map[string]map[string]string
+	Taggable       map[string]bool
 }
 
 // Constructor for maaking the rule struct
-func NewReccomendationFlagRule(tagIDMap map[string]string, reccoMap map[string]map[string]string) *ReccomendationFlagRule {
+func NewReccomendationFlagRule(tagIDMap map[string]string, reccoMap map[string]map[string]string, taggableMap map[string]bool) *ReccomendationFlagRule {
 	return &ReccomendationFlagRule{
 		TagToID:        tagIDMap,
 		AttributeRecco: reccoMap,
+		Taggable:       taggableMap,
 	}
 }
 
@@ -84,11 +86,14 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 	for _, module := range resources.Blocks {
 		tags, exists := module.Body.Attributes["tags"]
 		if !exists {
-			runner.EmitIssue(
-				r,
-				"The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
-				module.DefRange,
-			)
+			_, ok := r.Taggable[module.Labels[0]]
+			if ok {
+				runner.EmitIssue(
+					r,
+					fmt.Sprintf("The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply! Resource Type: %s", module.Labels[0]),
+					module.DefRange,
+				)
+			}
 			continue
 		}
 		var getTags map[string]string
