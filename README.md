@@ -1,4 +1,4 @@
-# TFLint Ruleset Template
+# CloudfixLinter Ruleset Template
 
 ## Requirements
 
