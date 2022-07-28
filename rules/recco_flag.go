@@ -90,7 +90,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 			if ok {
 				runner.EmitIssue(
 					r,
-					fmt.Sprintf("The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply! Resource Type: %s", module.Labels[0]),
+					"The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
 					module.DefRange,
 				)
 			}
