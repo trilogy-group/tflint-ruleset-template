@@ -90,7 +90,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 			if ok {
 				runner.EmitIssue(
 					r,
-					"The resource in question does not have tags. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
+					"This resources is missing tags. Fix by running \"cloudfix-linter addTags\" followed by \"terraform apply\"!",
 					module.DefRange,
 				)
 			}
@@ -103,7 +103,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !foundY {
 			runner.EmitIssue(
 				r,
-				"The resource in question does not have a yor trace. Apply tags by running \"cloudfix-linter addTags\" and do a terraform apply!",
+				"This resource is missing a trace id tag. Fix by running \"cloudfix-linter addTags\" followed by \"terraform apply\"!",
 				tags.Expr.Range(),
 			)
 			continue
@@ -114,7 +114,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 		if !foundA {
 			runner.EmitIssue(
 				r,
-				fmt.Sprintf("Failed to find AWS ID with yor_trace: \"%s\".Either the resource has not been deployed, or the yor trace has been changed. You might want to run a terraform apply!", yorTraceTrim),
+				fmt.Sprintf("Couldn't find a matching AWS resource: \"%s\".Either it hasn't been deployed, or the trace ID has been changed. Run \"terraform apply\"!", yorTraceTrim),
 				tags.Expr.Range(),
 			)
 			continue
@@ -126,7 +126,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 			if attributeType == "NoAttributeMarker" {
 				runner.EmitIssue(
 					r,
-					fmt.Sprintf("Oppurtunity Description: \"%s\"", attributeValue),
+					fmt.Sprintf("Description: \"%s\"", attributeValue),
 					module.DefRange,
 				)
 			} else {
@@ -134,7 +134,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 				if !existsAttribute {
 					runner.EmitIssue(
 						r,
-						fmt.Sprintf("Oppurtunity exists but the attribute could not be found. Attribute \"%s\" should be set to \"%s\"", attributeType, attributeValue),
+						fmt.Sprintf("Reduce cost by setting the value of attribute \"%s\" to \"%s\"", attributeType, attributeValue),
 						module.DefRange,
 					)
 					continue
@@ -144,7 +144,7 @@ func (r *ReccomendationFlagRule) Check(runner tflint.Runner) error {
 				if extractAttribute != attributeValue {
 					runner.EmitIssue(
 						r,
-						fmt.Sprintf("Oppurtunity exists for this attribute. It should be set to \"%s\"", attributeValue),
+						fmt.Sprintf("Reduce cost by setting this value to \"%s\"", attributeValue),
 						attributeTerraform.Expr.Range(),
 					)
 				}
