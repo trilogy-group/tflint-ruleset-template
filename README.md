@@ -36,3 +36,8 @@ $ make install
 The plugin can be run by executing `tflint` on the commmand line. More details about the supported commands can be found [here](https://github.com/terraform-linters/tflint/blob/master/README.md#usage)
 
 This tool is meant to be used in conjunction with `cloudfix-linter`. Details about it can be found [here](https://github.com/trilogy-group/cloudfix-linter)
+
+## Releasing a new version
+
+1) Push a new tag
+2( run `goreleaser release`)
