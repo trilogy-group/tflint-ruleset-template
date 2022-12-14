@@ -24,7 +24,7 @@ func readReccosFile(fileName string) (map[string]map[string][]string, error) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		items := strings.Split(line, ":") //items[0] -> AWSID, items[1] -> attributeType items[2] -> attributeValue
+		items := strings.Split(line, "->") //items[0] -> AWSID, items[1] -> attributeType items[2] -> attributeValue
 		if len(items) < 2 {
 			return reccosMap, errors.New("Corrupt Recommendation")
 		}
