@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -71,7 +72,8 @@ func main() {
 	if runtime.GOOS == "windows" {
 		currPWD, err := exec.Command("powershell", "-NoProfile", "(pwd).path").Output()
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		currPWDStrip = strings.Trim(string(currPWD), "\n")
 		currPWDStrip = strings.TrimSuffix(currPWDStrip, "\r")
@@ -80,7 +82,8 @@ func main() {
 	} else {
 		currPWD, err := exec.Command("pwd").Output()
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		currPWDStrip = strings.Trim(string(currPWD), "\n")
 		reccosFilePath = currPWDStrip + "/" + reccosFileName
@@ -88,12 +91,14 @@ func main() {
 	}
 	reccos, errR := readReccosFile(reccosFilePath)
 	if errR != nil {
-		panic(errR)
+		fmt.Println(errR)
+		return
 	}
 
 	tagToID, errT := readTagFile(tagFilePath)
 	if errT != nil {
-		panic(errT)
+		fmt.Println(errT)
+		return
 	}
 	var taggableMap = make(map[string]bool)
 	for _, resourceType := range taggableArray {
