@@ -13,7 +13,7 @@ You can install the plugin with `tflint --init`. Declare a config in `.tflint.hc
 plugin "template" {
   enabled = true
 
-  version = "0.2.2"
+  version = "0.2.4"
   source  = "github.com/trilogy-group/tflint-ruleset-template"
 
 }
