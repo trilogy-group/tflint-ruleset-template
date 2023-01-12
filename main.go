@@ -10,7 +10,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 	"github.com/terraform-linters/tflint-ruleset-template/rules"
-	"github.com/trilogy-group/cloudfix-linter-developer/cloudfixIntegration"
+	"github.com/trilogy-group/cloudfix-linter/cloudfixIntegration"
 )
 
 func readReccosFile(fileName string) (map[string]cloudfixIntegration.Recommendation, error) {
