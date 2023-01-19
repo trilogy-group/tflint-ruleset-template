@@ -12,7 +12,7 @@ builds:
       - windows_amd64
 archives:
   - id: zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .Env.APP_NAME }}_{{ .Os }}_{{ .Arch }}"
     format: zip
     files:
       - none*
