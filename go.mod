@@ -2,17 +2,14 @@ module github.com/terraform-linters/tflint-ruleset-template
 
 go 1.18
 
-require (
-	github.com/hashicorp/terraform-json v0.14.0
-	github.com/terraform-linters/tflint-plugin-sdk v0.11.0
-)
+require github.com/terraform-linters/tflint-plugin-sdk v0.11.0
 
 require (
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/hashicorp/go-hclog v1.2.0 // indirect
 	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/hcl/v2 v2.12.0 // indirect
