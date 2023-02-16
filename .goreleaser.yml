@@ -4,6 +4,7 @@ env:
   - CGO_ENABLED=0
 builds:
   - dir: ../
+    binary: tflint-ruleset-developer
     targets:
       - linux_386
       - linux_amd64
